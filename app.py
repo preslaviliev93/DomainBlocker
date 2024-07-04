@@ -1,5 +1,31 @@
 import platform
+import sys
+import ctypes
+import os
 
+
+def is_admin():
+    if platform.system() == 'Windows':
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+    else:
+        return os.getuid() == 0
+
+
+def run_as_admin():
+    if platform.system() == 'Windows':
+        params = " ".join(sys.argv)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
+        sys.exit()
+    else:
+        os.execvp("sudo", ['sudo', 'python3'] + sys.argv)
+
+
+if not is_admin():
+    print("Script is not running with admin privileges. Attempting to run script again.")
+    run_as_admin()
 
 class DNSBlocker:
     def __init__(self):
